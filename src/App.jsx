@@ -5,6 +5,8 @@ import React, { useState, useEffect } from "react";
 import _, { isEqual } from "lodash";
 import ResultsArea from "./ResultsArea";
 import crossImage from "./assets/cross.png";
+import naughtImage from "./assets/naught.png";
+import oXImage from "./assets/pngwingcom.png";
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
@@ -54,11 +56,7 @@ function App() {
     <img src={crossImage} className="object-contain" alt="cross symbol" />
   );
   const naughtSymbol = (
-    <img
-      src="./src/assets/naught.png"
-      className="object-contain"
-      alt="naught symbol"
-    />
+    <img src={naughtImage} className="object-contain" alt="naught symbol" />
   );
 
   // let localMessage = "";
@@ -357,11 +355,7 @@ function App() {
         <div className="flex flex-col justify-center gap-5">
           <div className="card lg:card-side bg-base-100 shadow-xl max-w-2xl px-4 h-48">
             <figure>
-              <img
-                className="max-h-40"
-                src="./src/assets/pngwingcom.png"
-                alt="naught and cross"
-              />
+              <img className="max-h-40" src={oXImage} alt="naught and cross" />
             </figure>
             <div className="card-body">
               <h2 className="card-title">Welcome to Tic-Tac-Toe.</h2>
@@ -421,11 +415,7 @@ function App() {
               }
             >
               <figure>
-                <img
-                  className="max-h-16"
-                  src="./src/assets/naught.png"
-                  alt="naught"
-                />
+                <img className="max-h-16" src={naughtImage} alt="naught" />
               </figure>
               <div className="card-body">
                 <h2 className="card-title">
