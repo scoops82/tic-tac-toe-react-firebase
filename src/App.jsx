@@ -15,7 +15,6 @@ import {
   doc,
   Firestore,
   updateDoc,
-  setDoc,
   getDoc,
   getFirestore,
   onSnapshot,
@@ -45,12 +44,23 @@ function App() {
     buttonClassNames: "btn btn-error",
     formDisplay: "card-actions justify-center w-full",
     gameFinished: false,
+    notifiedResult: false,
+    results: [
+      {
+        date: { seconds: 1660490592, nanoseconds: 719000000 },
+        player1: "Firefox Test",
+        player2: "Chrome Test",
+        result: "player1",
+      },
+    ],
   });
   const [displayControl, setDisplayControl] = useState({
     formDisabled: false,
     gameBoardDisplay: "hidden",
     localMessage: "",
   });
+
+  // const [results, setResults] = useState([]);
 
   const crossSymbol = (
     <img src={crossImage} className="object-contain" alt="cross symbol" />
@@ -82,6 +92,7 @@ function App() {
   const gameinfoRef = doc(db, "current-game", "game-info");
   const gamegridRef = collection(db, "game-grid");
   const currentGameRef = collection(db, "current-game");
+  const resultsInfoRef = doc(db, "results", "resultsInfo");
 
   // Initial Get of Game info.
   async function initialGetGameInfo() {
@@ -118,6 +129,9 @@ function App() {
             console.log("Updating gameInfo in state...");
             setGameInfo(change.doc.data());
           }
+          if (gameInfo.player1.length === 0 && gameInfo.player2.length === 0) {
+            setDisplayControl({ ...displayControl, formDisabled: false });
+          }
           // if (change.type === "modified") {
           //   setGameInfo(change.doc.data());
           //   console.log("modified in gameinfo", change.doc.data());
@@ -153,6 +167,11 @@ function App() {
       setDisplayControl({
         ...displayControl,
         localMessage:
+          "The game has finished. Please click the button below to play again.",
+      });
+      setGameInfo({
+        ...gameInfo,
+        message:
           "The game has finished. Please click the button below to play again.",
       });
     } else if (gameInfo.moves.length >= 9) {
@@ -265,7 +284,8 @@ function App() {
               buttonText: "Play Again",
             });
           }
-        } else if (gameInfo.player2Moves.includes(num)) {
+        }
+        if (gameInfo.player2Moves.includes(num)) {
           player2Matches.push(num);
           if (player2Matches.length === 3) {
             // localMessage = `${gameInfo.player2} Wins!`;
@@ -276,7 +296,8 @@ function App() {
               buttonText: "Play Again",
             });
           }
-        } else if (gameInfo.moves.length === 9) {
+        }
+        if (gameInfo.moves.length === 9) {
           notifyWin("draw");
           setDisplayControl({
             ...displayControl,
@@ -290,31 +311,50 @@ function App() {
     }
   }
   async function notifyWin(result) {
-    if (result === "draw") {
+    const now = new Date();
+    if (result === "draw" && amPlayer1) {
       await updateDoc(gameinfoRef, {
         message: `It's a draw!`,
         buttonText: "Play again",
         buttonClassNames: "btn btn-success",
         gameFinished: true,
+        results: arrayUnion({
+          date: now,
+          result: "draw",
+          player1: `${gameInfo.player1}`,
+          player2: `${gameInfo.player2}`,
+        }),
       });
-    } else if (result === "player1") {
+    } else if (result === "player1" && amPlayer1) {
       try {
         await updateDoc(gameinfoRef, {
           message: `${gameInfo.player1} Wins! Better luck next time ${gameInfo.player2}`,
           buttonText: "Play again",
           buttonClassNames: "btn btn-success",
           gameFinished: true,
+          results: arrayUnion({
+            date: now,
+            result: "player1",
+            player1: `${gameInfo.player1}`,
+            player2: `${gameInfo.player2}`,
+          }),
         });
       } catch (error) {
         setDisplayControl({ ...displayControl, localMessage: error });
       }
-    } else if (result === "player2") {
+    } else if (result === "player2" && amPlayer1) {
       try {
         await updateDoc(gameinfoRef, {
           message: `${gameInfo.player2} Wins! Better luck next time ${gameInfo.player1}`,
           buttonText: "Play again",
           buttonClassNames: "btn btn-success",
           gameFinished: true,
+          results: arrayUnion({
+            date: now,
+            result: "player2",
+            player1: `${gameInfo.player1}`,
+            player2: `${gameInfo.player2}`,
+          }),
         });
       } catch (error) {
         setDisplayControl({ ...displayControl, localMessage: error });
@@ -324,7 +364,7 @@ function App() {
 
   async function endGame() {
     try {
-      await setDoc(gameinfoRef, {
+      await updateDoc(gameinfoRef, {
         player1: "",
         player2: "",
         turnNumber: 1,
@@ -337,6 +377,7 @@ function App() {
         buttonClassNames: "btn btn-error",
         formDisplay: "card-actions justify-center w-full",
         gameFinished: false,
+        notifiedResult: false,
       });
     } catch (error) {
       console.log("Error clearing game-info: ", error);
@@ -375,8 +416,9 @@ function App() {
                         className="input input-bordered w-full"
                         value={playerNameInput}
                         onChange={($e) => setPlayerNameInput($e.target.value)}
-                        autofocus
+                        autoFocus
                         disabled={displayControl.formDisabled}
+                        required
                       />
                       <button
                         className="btn btn-primary"
@@ -529,7 +571,7 @@ function App() {
           </button>
         </div>
         <div className="divider lg:divider-horizontal"></div>
-        <ResultsArea />
+        <ResultsArea allResults={gameInfo.results} />
       </div>
     </div>
   );
