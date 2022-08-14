@@ -106,6 +106,9 @@ function App() {
     "card card-side bg-base-100 shadow-xl px-4 shadow-blue-naught";
   // Listener for changes in current-game/game-info
   useEffect(() => {
+    if (gameInfo.player1.length === 0 && gameInfo.player2.length === 0) {
+      setDisplayControl({ ...displayControl, formDisabled: false });
+    }
     const currentGameInfoUnsubscribe = onSnapshot(
       currentGameRef,
       (snapshot) => {
