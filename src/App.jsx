@@ -404,11 +404,7 @@ function App() {
               }
             >
               <figure>
-                <img
-                  className="max-h-16"
-                  src="./src/assets/cross.png"
-                  alt="cross"
-                />
+                <img className="max-h-16" src={crossImage} alt="cross" />
               </figure>
               <div className="card-body">
                 <h2 className="card-title">
