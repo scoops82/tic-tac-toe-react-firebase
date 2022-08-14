@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 // import { nanoid } from "nanoid";
 import _, { isEqual } from "lodash";
 import ResultsArea from "./ResultsArea";
+import crossImage from "./assets/cross.png";
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
@@ -50,11 +51,7 @@ function App() {
   });
 
   const crossSymbol = (
-    <img
-      src="./src/assets/cross.png"
-      className="object-contain"
-      alt="cross symbol"
-    />
+    <img src={crossImage} className="object-contain" alt="cross symbol" />
   );
   const naughtSymbol = (
     <img
