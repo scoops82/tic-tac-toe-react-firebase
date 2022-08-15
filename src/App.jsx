@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 // import GameBoard from "./GameBoard";
 // import PlayersArea from "./PlayersArea";
-// import { nanoid } from "nanoid";
+import { nanoid } from "nanoid";
 import _, { isEqual } from "lodash";
 import ResultsArea from "./ResultsArea";
 import crossImage from "./assets/cross.png";
@@ -34,6 +34,7 @@ function App() {
   const [gameInfo, setGameInfo] = useState({
     player1: "",
     player2: "",
+    gameID: "",
     turnNumber: 1,
     moves: [],
     player1Moves: [],
@@ -59,8 +60,9 @@ function App() {
     gameBoardDisplay: "hidden",
     localMessage: "",
   });
+  const [currentGameResult, setCurrentGameResult] = useState({});
 
-  // const [results, setResults] = useState([]);
+  const [turnNumber, setTurnNumber] = useState(1);
 
   const crossSymbol = (
     <img src={crossImage} className="object-contain" alt="cross symbol" />
@@ -92,21 +94,21 @@ function App() {
   const gameinfoRef = doc(db, "current-game", "game-info");
   const gamegridRef = collection(db, "game-grid");
   const currentGameRef = collection(db, "current-game");
-  const resultsInfoRef = doc(db, "results", "resultsInfo");
+  // const resultsInfoRef = doc(db, "results", "resultsInfo");
 
   // Initial Get of Game info.
-  async function initialGetGameInfo() {
-    try {
-      const gameinfoDocSnap = await getDoc(gameinfoRef);
-      if (gameinfoDocSnap.exists()) {
-        setGameInfo(gameinfoDocSnap.data());
-      } else {
-        console.log("No such document!");
-      }
-    } catch (error) {
-      console.log("Initial fetch from firestore failed: ", error);
-    }
-  }
+  // async function initialGetGameInfo() {
+  //   try {
+  //     const gameinfoDocSnap = await getDoc(gameinfoRef);
+  //     if (gameinfoDocSnap.exists()) {
+  //       setGameInfo(gameinfoDocSnap.data());
+  //     } else {
+  //       console.log("No such document!");
+  //     }
+  //   } catch (error) {
+  //     console.log("Initial fetch from firestore failed: ", error);
+  //   }
+  // }
   // initialGetGameInfo();
 
   const player1CardActive =
@@ -129,9 +131,12 @@ function App() {
             console.log("Updating gameInfo in state...");
             setGameInfo(change.doc.data());
           }
-          if (gameInfo.player1.length === 0 && gameInfo.player2.length === 0) {
-            setDisplayControl({ ...displayControl, formDisabled: false });
+          if (gameInfo.turnNumber !== turnNumber) {
+            setTurnNumber(gameInfo.turnNumber);
           }
+          // if (gameInfo.player1.length === 0 && gameInfo.player2.length === 0) {
+          //   setDisplayControl({ ...displayControl, formDisabled: false });
+          // }
           // if (change.type === "modified") {
           //   setGameInfo(change.doc.data());
           //   console.log("modified in gameinfo", change.doc.data());
@@ -144,25 +149,14 @@ function App() {
         });
       }
     );
-    setDisplayControl({ ...displayControl, localMessage: "" });
+    // setDisplayControl({ ...displayControl, localMessage: "" });
 
     return () => {
       currentGameInfoUnsubscribe();
     };
   }, [gameInfo]);
 
-  useEffect(() => {
-    checkWin();
-    if (gameInfo.turnNumber > 9) {
-    }
-
-    return () => {
-      // second;
-    };
-  }, [gameInfo.turnNumber]);
-
   async function takeTurn(gridRef) {
-    checkWin();
     if (gameInfo.gameFinished) {
       setDisplayControl({
         ...displayControl,
@@ -250,6 +244,7 @@ function App() {
         await updateDoc(gameinfoRef, {
           player1: playerName,
           message: "Player 2, please enter your name to start the game.",
+          gameID: nanoid(),
         });
       } catch (error) {
         console.log("Error updating player name: ", error);
@@ -284,8 +279,7 @@ function App() {
               buttonText: "Play Again",
             });
           }
-        }
-        if (gameInfo.player2Moves.includes(num)) {
+        } else if (gameInfo.player2Moves.includes(num)) {
           player2Matches.push(num);
           if (player2Matches.length === 3) {
             // localMessage = `${gameInfo.player2} Wins!`;
@@ -296,8 +290,7 @@ function App() {
               buttonText: "Play Again",
             });
           }
-        }
-        if (gameInfo.moves.length === 9) {
+        } else if (gameInfo.moves.length === 9) {
           notifyWin("draw");
           setDisplayControl({
             ...displayControl,
@@ -312,61 +305,114 @@ function App() {
   }
   async function notifyWin(result) {
     const now = new Date();
-    if (result === "draw" && amPlayer1) {
-      await updateDoc(gameinfoRef, {
-        message: `It's a draw!`,
-        buttonText: "Play again",
-        buttonClassNames: "btn btn-success",
-        gameFinished: true,
-        results: arrayUnion({
+    const lastResultIdx = gameInfo.results.length - 1;
+    const lastResultGameID = gameInfo.results[lastResultIdx];
+    const currentGameID = gameInfo.gameID;
+    if (
+      lastResultGameID !== currentGameID &&
+      gameInfo.notifiedResult === false
+    ) {
+      if (result === "draw" && amPlayer1) {
+        setCurrentGameResult({
           date: now,
           result: "draw",
           player1: `${gameInfo.player1}`,
           player2: `${gameInfo.player2}`,
-        }),
-      });
-    } else if (result === "player1" && amPlayer1) {
-      try {
-        await updateDoc(gameinfoRef, {
-          message: `${gameInfo.player1} Wins! Better luck next time ${gameInfo.player2}`,
-          buttonText: "Play again",
-          buttonClassNames: "btn btn-success",
-          gameFinished: true,
-          results: arrayUnion({
-            date: now,
-            result: "player1",
-            player1: `${gameInfo.player1}`,
-            player2: `${gameInfo.player2}`,
-          }),
+          id: gameInfo.gameID,
         });
-      } catch (error) {
-        setDisplayControl({ ...displayControl, localMessage: error });
-      }
-    } else if (result === "player2" && amPlayer1) {
-      try {
-        await updateDoc(gameinfoRef, {
-          message: `${gameInfo.player2} Wins! Better luck next time ${gameInfo.player1}`,
-          buttonText: "Play again",
-          buttonClassNames: "btn btn-success",
-          gameFinished: true,
-          results: arrayUnion({
-            date: now,
-            result: "player2",
-            player1: `${gameInfo.player1}`,
-            player2: `${gameInfo.player2}`,
-          }),
+        try {
+          await updateDoc(gameinfoRef, {
+            message: `It's a draw!`,
+            buttonText: "Play again",
+            buttonClassNames: "btn btn-success",
+            gameFinished: true,
+            notifiedResult: true,
+          });
+          // setGameInfo({ ...gameInfo, notifiedResult: true });
+        } catch {
+          setDisplayControl({ ...displayControl, localMessage: error });
+        }
+      } else if (result === "player1" && amPlayer1) {
+        setCurrentGameResult({
+          date: now,
+          result: "player1",
+          player1: `${gameInfo.player1}`,
+          player2: `${gameInfo.player2}`,
+          id: gameInfo.gameID,
         });
-      } catch (error) {
-        setDisplayControl({ ...displayControl, localMessage: error });
+        try {
+          await updateDoc(gameinfoRef, {
+            message: `${gameInfo.player1} Wins! Better luck next time ${gameInfo.player2}`,
+            buttonText: "Play again",
+            buttonClassNames: "btn btn-success",
+            gameFinished: true,
+            notifiedResult: true,
+          });
+          // setGameInfo({ ...gameInfo, notifiedResult: true });
+        } catch (error) {
+          setDisplayControl({ ...displayControl, localMessage: error });
+        }
+      } else if (result === "player2" && amPlayer1) {
+        setCurrentGameResult({
+          date: now,
+          result: "player2",
+          player1: `${gameInfo.player1}`,
+          player2: `${gameInfo.player2}`,
+          id: gameInfo.gameID,
+        });
+        try {
+          await updateDoc(gameinfoRef, {
+            message: `${gameInfo.player2} Wins! Better luck next time ${gameInfo.player1}`,
+            buttonText: "Play again",
+            buttonClassNames: "btn btn-success",
+            gameFinished: true,
+            notifiedResult: true,
+          });
+          // setGameInfo({ ...gameInfo, notifiedResult: true });
+        } catch (error) {
+          setDisplayControl({ ...displayControl, localMessage: error });
+        }
       }
     }
   }
+
+  useEffect(() => {
+    // if (gameInfo.moves.length > 4 && !gameInfo.notifiedResult) {
+    //   checkWin();
+    // }
+    checkWin();
+    console.log("running results useEffect");
+    const sendResult = async () => {
+      if (!_.isEqual({}, currentGameResult)) {
+        console.log(
+          "running sendResult function, currentGameResult: ",
+          currentGameResult
+        );
+        try {
+          await updateDoc(gameinfoRef, {
+            results: arrayUnion(currentGameResult),
+          });
+        } catch (error) {
+          setDisplayControl({ ...displayControl, localMessage: error });
+        }
+      }
+    };
+
+    sendResult();
+
+    return () => {
+      console.log("cleaning up currentGameResult");
+      setCurrentGameResult({});
+      setDisplayControl({ ...displayControl, localMessage: "" });
+    };
+  }, [turnNumber]);
 
   async function endGame() {
     try {
       await updateDoc(gameinfoRef, {
         player1: "",
         player2: "",
+        gameID: "",
         turnNumber: 1,
         moves: [],
         player1Moves: [],
@@ -382,7 +428,6 @@ function App() {
     } catch (error) {
       console.log("Error clearing game-info: ", error);
     }
-    setPlayerNameInput("");
     setDisplayControl({
       gameBoardDisplay: "hidden",
       formDisabled: false,
@@ -397,9 +442,13 @@ function App() {
           <h1>Tic-Tac-Toe</h1>
         </div>
         <div className="flex flex-col justify-center gap-5">
-          <div className="card lg:card-side bg-base-100 shadow-xl max-w-2xl px-4 h-48">
-            <figure>
-              <img className="max-h-40" src={oXImage} alt="naught and cross" />
+          <div className="card lg:card-side bg-base-100 shadow-xl max-w-2xl px-4">
+            <figure className="-m-8 md:m-auto">
+              <img
+                className="auto max-h-36 md:max-h-40 rotate-90 md:rotate-0"
+                src={oXImage}
+                alt="naught and cross"
+              />
             </figure>
             <div className="card-body">
               <h2 className="card-title">Welcome to Tic-Tac-Toe.</h2>
