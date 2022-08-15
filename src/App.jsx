@@ -436,7 +436,7 @@ function App() {
   }
 
   return (
-    <div className="App space-y-10 ">
+    <div className="App space-y-10 max-w-full">
       <div className="App flex flex-col items-center gap-5">
         <div className="mt-8 prose min-w-full text-center">
           <h1>Tic-Tac-Toe</h1>
