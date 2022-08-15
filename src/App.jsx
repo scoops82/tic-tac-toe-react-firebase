@@ -40,7 +40,7 @@ function App() {
     player1Moves: [],
     player2Moves: [],
     message:
-      "Enter your name in the form below to start a game. Once two people have entered their names then a game can start.",
+      "Send this site's address to the person you want to challenge. Enter your name in the form below to start a game. Once two people have entered their names then a game can start.",
     buttonText: "Reset",
     buttonClassNames: "btn btn-error",
     formDisplay: "card-actions justify-center w-full",
@@ -418,7 +418,7 @@ function App() {
         player1Moves: [],
         player2Moves: [],
         message:
-          "Enter your name in the form below to start a game. Once two people have entered their names then a game can start.",
+          "Send this site's address to the person you want to challenge. Enter your name in the form below to start a game. Once two people have entered their names then a game can start.",
         buttonText: "Reset Game",
         buttonClassNames: "btn btn-error",
         formDisplay: "card-actions justify-center w-full",
@@ -492,7 +492,7 @@ function App() {
               }
             >
               <figure>
-                <img className="max-h-16" src={crossImage} alt="cross" />
+                <img className="max-h-12" src={crossImage} alt="cross" />
               </figure>
               <div className="card-body">
                 <h2 className="card-title">
@@ -509,7 +509,7 @@ function App() {
               }
             >
               <figure>
-                <img className="max-h-16" src={naughtImage} alt="naught" />
+                <img className="max-h-12" src={naughtImage} alt="naught" />
               </figure>
               <div className="card-body">
                 <h2 className="card-title">
