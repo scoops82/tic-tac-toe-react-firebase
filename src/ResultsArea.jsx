@@ -98,7 +98,7 @@ function ResultsArea({ allResults }) {
 
   return (
     <div>
-      <div className="overflow-y-auto max-h-96 space-y-2">
+      <div className="overflow-y-auto max-h-96 space-y-2 text-center">
         {allResults.length === 0 ? (
           <h2>No results yet.</h2>
         ) : (
@@ -107,22 +107,22 @@ function ResultsArea({ allResults }) {
         <ul className="space-y-2">
           {parsedResults.map((resultInfo, i) => (
             <li key={i} className="m">
-              <div className="card w-96 bg-base-100 h-auto shadow-xl image-full">
+              <div className="card w-96 bg-base-100 h-32 shadow-xl image-full">
                 <figure>
                   <img
                     src={resultInfo.imageSrc}
                     alt="Winners symbol"
                     className={
                       resultInfo.imageSrc === oXImage
-                        ? "max-h-32 rotate-90"
+                        ? "transform -translate-y-8 max-h-48 rotate-90"
                         : "max-h-32 rotate-0"
                     }
                   />
                 </figure>
                 <div className="card-body">
-                  <h2 className="card-title">
-                    {resultInfo.player1} V {resultInfo.player2}
-                  </h2>
+                  <h3 className="text-xl font-bold text-center">
+                    {resultInfo.player1} Vs {resultInfo.player2}
+                  </h3>
                   <p>
                     {resultInfo.timeAgoString} {synonymSelector(resultInfo)}
                   </p>
