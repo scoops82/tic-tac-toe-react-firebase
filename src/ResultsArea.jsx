@@ -94,7 +94,7 @@ function ResultsArea({ allResults }) {
   for (const item of allResults) {
     parsedResults.unshift(resultsParser(item));
   }
-  console.log("parsedResults: ", parsedResults);
+  // console.log("parsedResults: ", parsedResults);
 
   return (
     <div>

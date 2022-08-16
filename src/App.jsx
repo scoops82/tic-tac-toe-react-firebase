@@ -180,6 +180,7 @@ function App() {
       // });
     } else if (amPlayer1 && gameInfo.turnNumber % 2 === 1) {
       console.log("Player1's turn.");
+      setTurnNumber(turnNumber + 1);
       try {
         await updateDoc(gameinfoRef, {
           turnNumber: increment(1),
@@ -192,6 +193,7 @@ function App() {
       }
     } else if (!amPlayer1 && gameInfo.turnNumber % 2 === 0) {
       console.log("Player2's turn.");
+      setTurnNumber(turnNumber + 1);
       try {
         await updateDoc(gameinfoRef, {
           turnNumber: increment(1),
@@ -254,6 +256,7 @@ function App() {
   }
 
   function checkWin() {
+    console.log("Running checkWin()...");
     const winningCombinations = [
       [1, 2, 3],
       [4, 5, 6],
@@ -304,6 +307,7 @@ function App() {
     }
   }
   async function notifyWin(result) {
+    console.log("Running notifyWin()...");
     const now = new Date();
     const lastResultIdx = gameInfo.results.length - 1;
     const lastResultGameID = gameInfo.results[lastResultIdx];
@@ -380,8 +384,10 @@ function App() {
     // if (gameInfo.moves.length > 4 && !gameInfo.notifiedResult) {
     //   checkWin();
     // }
-    checkWin();
     console.log("running results useEffect");
+    console.log("turnNumber in state: ", turnNumber);
+    checkWin();
+
     const sendResult = async () => {
       if (!_.isEqual({}, currentGameResult)) {
         console.log(
