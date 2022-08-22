@@ -29,6 +29,8 @@ function App() {
 
   const [amPlayer1, setAmPlayer1] = useState(true);
 
+  const [formDisplay, setFormDisplay] = useState("");
+
   // used to determine and display the player whose turn it is.
   // const [currentPlayer, setCurrentPlayer] = useState("player1");
   const [gameInfo, setGameInfo] = useState({
@@ -92,7 +94,7 @@ function App() {
   const db = getFirestore(app);
 
   const gameinfoRef = doc(db, "current-game", "game-info");
-  const gamegridRef = collection(db, "game-grid");
+  // const gamegridRef = collection(db, "game-grid");
   const currentGameRef = collection(db, "current-game");
   // const resultsInfoRef = doc(db, "results", "resultsInfo");
 
@@ -119,9 +121,9 @@ function App() {
     "card card-side bg-base-100 shadow-xl px-4 shadow-blue-naught";
   // Listener for changes in current-game/game-info
   useEffect(() => {
-    if (gameInfo.player1.length === 0 && gameInfo.player2.length === 0) {
-      setDisplayControl({ ...displayControl, formDisabled: false });
-    }
+    // if (gameInfo.player1.length === 0 && gameInfo.player2.length === 0) {
+    //   setDisplayControl({ ...displayControl, formDisabled: false });
+    // }
     const currentGameInfoUnsubscribe = onSnapshot(
       currentGameRef,
       (snapshot) => {
@@ -225,7 +227,9 @@ function App() {
   async function addPlayer(e, playerName) {
     e.preventDefault();
     // formClassName = "hidden";
+    setFormDisplay("invisible");
     setDisplayControl({
+      ...displayControl,
       gameBoardDisplay: "divide-y-8 max-w-lg p-2",
       formDisabled: true,
     });
@@ -274,7 +278,7 @@ function App() {
         if (gameInfo.player1Moves.includes(num)) {
           player1Matches.push(num);
           if (player1Matches.length === 3) {
-            // localMessage = `${gameInfo.player1} Wins!`;
+            console.log(`checkWin() says '${gameInfo.player1} Wins!'`);
             notifyWin("player1");
             setDisplayControl({
               ...displayControl,
@@ -282,10 +286,11 @@ function App() {
               buttonText: "Play Again",
             });
           }
-        } else if (gameInfo.player2Moves.includes(num)) {
+        }
+        if (gameInfo.player2Moves.includes(num)) {
           player2Matches.push(num);
           if (player2Matches.length === 3) {
-            // localMessage = `${gameInfo.player2} Wins!`;
+            console.log(`checkWin() says '${gameInfo.player2} Wins!'`);
             notifyWin("player2");
             setDisplayControl({
               ...displayControl,
@@ -294,6 +299,7 @@ function App() {
             });
           }
         } else if (gameInfo.moves.length === 9) {
+          console.log(`checkWin() says 'It is a draw!'`);
           notifyWin("draw");
           setDisplayControl({
             ...displayControl,
@@ -434,6 +440,7 @@ function App() {
     } catch (error) {
       console.log("Error clearing game-info: ", error);
     }
+    setFormDisplay("");
     setDisplayControl({
       gameBoardDisplay: "hidden",
       formDisabled: false,
@@ -456,13 +463,16 @@ function App() {
                 alt="naught and cross"
               />
             </figure>
-            <div className="card-body">
+            <div className="card-body h-auto">
               <h2 className="card-title">Welcome to Tic-Tac-Toe.</h2>
               <p>{gameInfo.message}</p>
               <p>{displayControl.localMessage}</p>
               <div className={gameInfo.formDisplay}>
                 <div className="form-control w-full">
-                  <form onSubmit={(e) => addPlayer(e, playerNameInput)}>
+                  <form
+                    onSubmit={(e) => addPlayer(e, playerNameInput)}
+                    className={formDisplay}
+                  >
                     <label className="input-group w-full">
                       <span>Name</span>
                       <input
