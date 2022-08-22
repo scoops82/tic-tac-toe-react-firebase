@@ -22,6 +22,7 @@ import {
   increment,
   getDocFromServer,
 } from "firebase/firestore";
+import Footer from "./Footer";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 function App() {
@@ -449,7 +450,7 @@ function App() {
   }
 
   return (
-    <div className="App space-y-10 max-w-full">
+    <div className="App space-y-10 max-w-full min-h-screen">
       <div className="App flex flex-col items-center gap-5">
         <div className="mt-8 prose min-w-full text-center">
           <h1>Tic-Tac-Toe</h1>
@@ -638,6 +639,7 @@ function App() {
         <div className="divider lg:divider-horizontal"></div>
         <ResultsArea allResults={gameInfo.results} />
       </div>
+      <Footer />
     </div>
   );
 }
